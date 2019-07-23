@@ -194,15 +194,38 @@ void bar_refresh(struct bar *bar)
     }
 
     // BAR CENTER
-    struct window *window = window_manager_focused_window(&g_window_manager);
-    char *title = window ? window_title(window) : NULL;
-    if (title) {
-        struct bar_line title_line = bar_prepare_line(bar->t_font, title, bar->foreground_color);
+    // struct window *window = window_manager_focused_window(&g_window_manager);
+    // char *title = window ? window_title(window) : NULL;
+    
+    // Spotify instead of title for window.
+    FILE *fp;
+    char path[128];
+    fp = popen("/etc/spotif.sh", "r");
+    if (fp == NULL) {
+        printf("Failed to run command\n" );
+        exit(1);
+    }
+
+    fgets(path, sizeof(path)-1, fp);
+    // pclose(fp);
+
+    if(path[0]) {
+        struct bar_line title_line = bar_prepare_line(bar->t_font, path, bar->foreground_color);
+        struct bar_line extra_line = bar_prepare_line(bar->i_font, "", bar->foreground_color);
         CGPoint pos = bar_align_line(bar, title_line, ALIGN_CENTER, ALIGN_CENTER);
         bar_draw_line(bar, title_line, pos.x, pos.y);
+        bar_draw_line(bar, extra_line, pos.x-15, pos.y);
         bar_destroy_line(title_line);
-        free(title);
+        bar_destroy_line(extra_line);
     }
+
+    // if (title) {
+    //     struct bar_line title_line = bar_prepare_line(bar->t_font, title, bar->foreground_color);
+    //     CGPoint pos = bar_align_line(bar, title_line, ALIGN_CENTER, ALIGN_CENTER);
+    //     bar_draw_line(bar, title_line, pos.x, pos.y);
+    //     bar_destroy_line(title_line);
+    //     free(title);
+    // }
 
     // BAR RIGHT
     time_t rawtime;
